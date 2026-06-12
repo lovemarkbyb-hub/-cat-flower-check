@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐱 고양이 안전 꽃 확인</title>
+  <style>
+    :root {
+      --primary:  #FF6B9D;
+      --bg:       #FFF5F8;
+      --card-bg:  #FFFFFF;
+      --text:     #2C3E50;
+      --sub:      #7F8C8D;
+      --muted:    #BDC3C7;
+      --safe-c:   #1A7A45; --safe-bg:    #E6F4ED; --safe-b:  #2ECC71;
+      --warn-c:   #A66000; --warn-bg:    #FFF3CD; --warn-b:  #F39C12;
+      --danger-c: #B71C1C; --danger-bg:  #FDECEA; --danger-b:#E74C3C;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ── 헤더 ── */
+    .app-header {
+      padding: 20px 20px 12px;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-header h1 { font-size: 22px; font-weight: 800; color: var(--text); }
+    .app-header p  { font-size: 13px; color: var(--sub); margin-top: 3px; }
+
+    /* ── 탭 ── */
+    .tabs {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid #F0F0F0;
+      position: sticky;
+      top: 72px;
+      z-index: 9;
+    }
+    .tab-btn {
+      flex: 1; padding: 12px 0;
+      font-size: 14px; font-weight: 600;
+      border: none; background: none; cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ── 탭 컨텐츠 ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── 검색창 ── */
+    .search-wrap {
+      display: flex; align-items: center;
+      background: #fff; border-radius: 14px;
+      padding: 11px 14px;
+      margin: 12px 16px 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .search-wrap span { font-size: 16px; margin-right: 8px; }
+    .search-wrap input {
+      flex: 1; border: none; outline: none;
+      font-size: 15px; color: var(--text);
+      background: transparent;
+    }
+    .search-wrap input::placeholder { color: var(--muted); }
+    #clear-btn {
+      font-size: 14px; color: var(--muted);
+      cursor: pointer; padding-left: 8px;
+      display: none;
+    }
+
+    /* ── 필터 칩 ── */
+    .filter-row {
+      display: flex; gap: 8px;
+      padding: 10px 16px 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid transparent;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: border-color .15s;
+    }
+    .chip.active { border-color: currentColor; font-weight: 800; }
+
+    /* ── 개수 표시 ── */
+    .result-count {
+      font-size: 12px; color: #95A5A6;
+      padding: 2px 20px 6px;
+    }
+
+    /* ── 꽃 카드 ── */
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 5px 16px;
+      border-left: 4px solid #ddd;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      cursor: pointer;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.12); }
+    .card.safe    { border-left-color: var(--safe-b); }
+    .card.caution { border-left-color: var(--warn-b); }
+    .card.danger  { border-left-color: var(--danger-b); }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-names  { flex: 1; margin-right: 8px; }
+    .korean  { font-size: 18px; font-weight: 700; }
+    .english { font-size: 13px; color: var(--sub); margin-top: 2px; }
+    .scientific { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 3px; }
+
+    /* 배지 */
+    .badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 4px 9px; border-radius: 20px; border: 1px solid;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .badge.safe    { color: var(--safe-c);   background: var(--safe-bg);   border-color: var(--safe-c); }
+    .badge.caution { color: var(--warn-c);   background: var(--warn-bg);   border-color: var(--warn-c); }
+    .badge.danger  { color: var(--danger-c); background: var(--danger-bg); border-color: var(--danger-c); }
+
+    /* 카드 상세 (접기/펼치기) */
+    .card-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+    }
+    .card.open .card-detail { max-height: 600px; }
+
+    .card-detail hr { border: none; border-top: 1px solid #F0F0F0; margin: 10px 0; }
+    .card-detail .desc { font-size: 14px; color: #555; line-height: 1.6; }
+
+    .symptom-box {
+      margin-top: 10px; border-radius: 10px;
+      border: 1px solid var(--danger-b);
+      padding: 12px; background: #FFF9F9;
+    }
+    .symptom-box.caution { border-color: var(--warn-b); }
+    .symptom-title { font-size: 11px; font-weight: 700; color: var(--danger-c); margin-bottom: 4px; }
+    .symptom-text  { font-size: 13px; color: var(--danger-c); line-height: 1.5; }
+    .symptom-box.caution .symptom-title,
+    .symptom-box.caution .symptom-text { color: var(--warn-c); }
+
+    .aspca-ref { font-size: 10px; color: var(--muted); margin-top: 10px; font-style: italic; }
+
+    .card-hint { text-align: center; font-size: 10px; color: #CCC; margin-top: 8px; }
+
+    /* ── 이달의 꽃 헤더 ── */
+    .monthly-header { padding: 16px 20px 8px; }
+    .monthly-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    .month-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .month-badge {
+      background: var(--primary); color: #fff;
+      padding: 6px 16px; border-radius: 20px;
+      font-size: 15px; font-weight: 700;
+    }
+    .month-sub { font-size: 13px; color: var(--sub); }
+    .monthly-desc { font-size: 13px; color: #95A5A6; line-height: 1.6; }
+
+    /* ── 빈 상태 ── */
+    .empty {
+      text-align: center; padding: 60px 20px;
+      color: var(--sub);
+    }
+    .empty .empty-icon { font-size: 44px; margin-bottom: 12px; }
+    .empty p { font-size: 16px; font-weight: 600; }
+    .empty small { font-size: 13px; color: var(--muted); display: block; margin-top: 4px; }
+
+    /* ── 반응형 ── */
+    @media (min-width: 481px) {
+      body { border-left: 1px solid #eee; border-right: 1px solid #eee; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>🐱 고양이 안전 꽃 확인</h1>
+  <p>ASPCA 기준으로 꽃의 안전 여부를 확인하세요</p>
+</div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-target="search">🔍 꽃 검색</button>
+  <button class="tab-btn"        data-target="monthly">🌸 이달의 꽃</button>
+</nav>
+
+<!-- 검색 탭 -->
+<section id="search" class="tab-content active">
+  <div class="search-wrap">
+    <span>🔍</span>
+    <input id="search-input" type="text" placeholder="꽃 이름 검색 (예: 장미, 백합, Rose)">
+    <span id="clear-btn">✕</span>
+  </div>
+
+  <div class="filter-row" id="filter-row"></div>
+
+  <p class="result-count" id="result-count"></p>
+  <div id="flower-list"></div>
+</section>
+
+<!-- 이달의 꽃 탭 -->
+<section id="monthly" class="tab-content">
+  <div class="monthly-header">
+    <h2>🌿 이달의 안전한 꽃</h2>
+    <div class="month-row">
+      <span class="month-badge" id="month-name"></span>
+      <span class="month-sub"  id="month-count"></span>
+    </div>
+    <p class="monthly-desc">이번 달 제철 꽃 중 고양이에게<br>안전한 꽃들을 소개합니다</p>
+  </div>
+  <div id="monthly-list"></div>
+</section>
+
+<script>
+// ── 데이터 ────────────────────────────────────────────────────────────────
+const FLOWERS = [
+  // 안전
+  {id:'1',k:'장미',e:'Rose',s:'Rosa spp.',lvl:'safe',desc:'ASPCA 기준 고양이에게 독성이 없는 안전한 꽃입니다. 가시에 긁히지 않도록만 주의하세요.',sym:null,m:[5,6,10],aspca:'Non-Toxic to Cats'},
+  {id:'2',k:'해바라기',e:'Sunflower',s:'Helianthus annuus',lvl:'safe',desc:'ASPCA 기준 고양이에게 완전히 안전한 꽃입니다. 밝고 따뜻한 여름 꽃입니다.',sym:null,m:[7,8,9],aspca:'Non-Toxic to Cats'},
+  {id:'3',k:'스냅드래곤',e:'Snapdragon',s:'Antirrhinum majus',lvl:'safe',desc:'고양이와 개 모두에게 독성이 없는 안전한 꽃입니다.',sym:null,m:[4,5,6],aspca:'Non-Toxic to Cats'},
+  {id:'4',k:'거베라',e:'Gerbera Daisy',s:'Gerbera jamesonii',lvl:'safe',desc:'ASPCA 기준 고양이에게 안전합니다. 사계절 내내 구할 수 있어 유용한 대안 꽃입니다.',sym:null,m:[4,5,6,7,8,9,10],aspca:'Non-Toxic to Cats'},
+  {id:'5',k:'호접란',e:'Moth Orchid',s:'Phalaenopsis spp.',lvl:'safe',desc:'대부분의 호접란은 고양이에게 안전합니다. 화분의 수태(이끼)를 먹지 않도록 주의하세요.',sym:null,m:[1,2,3,4,5,6,7,8,9,10,11,12],aspca:'Non-Toxic to Cats'},
+  {id:'6',k:'프리지아',e:'Freesia',s:'Freesia spp.',lvl:'safe',desc:'향기롭고 섬세한 봄 꽃으로, ASPCA 기준 고양이에게 독성이 없습니다.',sym:null,m:[3,4,5],aspca:'Non-Toxic to Cats'},
+  {id:'7',k:'백일초',e:'Zinnia',s:'Zinnia elegans',lvl:'safe',desc:'오래 피는 꽃으로, 고양이에게 안전한 대표적인 여름·가을 꽃입니다.',sym:null,m:[7,8,9,10],aspca:'Non-Toxic to Cats'},
+  {id:'8',k:'맨드라미',e:'Celosia',s:'Celosia argentea',lvl:'safe',desc:'독특한 닭벼슬 모양의 꽃으로, 고양이에게 독성이 없습니다.',sym:null,m:[7,8,9,10],aspca:'Non-Toxic to Cats'},
+  {id:'9',k:'스타티스',e:'Statice',s:'Limonium sinuatum',lvl:'safe',desc:'드라이플라워로도 인기 있는 꽃으로, 고양이에게 안전합니다.',sym:null,m:[5,6,7,8],aspca:'Non-Toxic to Cats'},
+  {id:'10',k:'아스터',e:'Aster',s:'Callistephus chinensis',lvl:'safe',desc:'가을의 대표 꽃 중 하나로, ASPCA 기준 고양이에게 안전합니다.',sym:null,m:[8,9,10],aspca:'Non-Toxic to Cats'},
+  {id:'11',k:'리아트리스',e:'Blazing Star',s:'Liatris spicata',lvl:'safe',desc:'보라색 수직 꽃대가 인상적인 꽃으로, 고양이에게 독성이 없습니다.',sym:null,m:[6,7,8],aspca:'Non-Toxic to Cats'},
+  {id:'12',k:'에키나세아',e:'Purple Coneflower',s:'Echinacea purpurea',lvl:'safe',desc:'면역력 강화 허브로 유명한 보라색 꽃으로, ASPCA 기준 고양이에게 안전합니다.',sym:null,m:[6,7,8,9],aspca:'Non-Toxic to Cats'},
+  // 주의
+  {id:'13',k:'카네이션',e:'Carnation',s:'Dianthus caryophyllus',lvl:'caution',desc:'어버이날 꽃으로 유명하지만 ASPCA 기준 경미한 독성이 있습니다. 닿지 않는 곳에 두세요.',sym:'구토, 설사, 경미한 피부 자극',m:[4,5,6,10,11],aspca:'Toxic to Cats (mild)'},
+  {id:'14',k:'안개꽃',e:"Baby's Breath",s:'Gypsophila paniculata',lvl:'caution',desc:'꽃다발에 자주 쓰이는 소재이나 섭취 시 경미한 위장 장애를 일으킬 수 있습니다.',sym:'구토, 설사',m:[5,6,7,8],aspca:'Toxic to Cats (mild)'},
+  {id:'15',k:'국화',e:'Chrysanthemum',s:'Chrysanthemum spp.',lvl:'caution',desc:'피레스린(Pyrethrin) 성분이 위장 장애와 피부 자극을 유발할 수 있습니다.',sym:'구토, 설사, 과다침분비, 피부 자극',m:[9,10,11],aspca:'Toxic to Cats (moderate)'},
+  {id:'16',k:'라벤더',e:'Lavender',s:'Lavandula spp.',lvl:'caution',desc:'리날로올(Linalool) 성분이 독성을 유발할 수 있습니다. 에센셜 오일은 훨씬 더 위험합니다.',sym:'구토, 식욕 감소, 중추신경 억제',m:[6,7,8],aspca:'Toxic to Cats (mild)'},
+  {id:'17',k:'알스트로메리아',e:'Peruvian Lily',s:'Alstroemeria spp.',lvl:'caution',desc:'진짜 백합류가 아닙니다. 경미한 위장 장애를 유발할 수 있으나 백합처럼 치명적이지 않습니다.',sym:'구토, 설사',m:[5,6,7,8],aspca:'Toxic to Cats (mild)'},
+  {id:'18',k:'포인세티아',e:'Poinsettia',s:'Euphorbia pulcherrima',lvl:'caution',desc:'크리스마스 대표 꽃이지만 흰 유액(latex)이 구강과 위장 자극을 일으킵니다.',sym:'구토, 침 흘림, 구강 자극',m:[11,12],aspca:'Toxic to Cats (mild irritant)'},
+  // 위험
+  {id:'19',k:'백합',e:'Lily',s:'Lilium / Hemerocallis spp.',lvl:'danger',desc:'⚠ 극도로 위험! 꽃잎·꽃가루·줄기·꽃꽂이 물까지 소량만 섭취해도 급성 신부전을 일으킵니다. 즉시 동물병원으로!',sym:'구토, 무기력, 무뇨, 급성 신부전, 사망',m:[5,6,7],aspca:'Toxic — SEVERE (Acute Renal Failure)'},
+  {id:'20',k:'튤립',e:'Tulip',s:'Tulipa spp.',lvl:'danger',desc:'튤리파린(Tulipalin) 성분이 독성을 유발합니다. 구근(알뿌리)이 가장 위험합니다.',sym:'구토, 설사, 침 흘림, 심박수 저하, 호흡 곤란',m:[3,4,5],aspca:'Toxic to Cats (severe)'},
+  {id:'21',k:'수선화',e:'Daffodil',s:'Narcissus spp.',lvl:'danger',desc:'리코린(Lycorine) 등 독성 알칼로이드를 포함합니다. 꽃꽂이 물도 독성을 유발합니다.',sym:'구토, 설사, 경련, 저혈압, 심장 부정맥',m:[3,4],aspca:'Toxic to Cats (severe)'},
+  {id:'22',k:'히아신스',e:'Hyacinth',s:'Hyacinthus orientalis',lvl:'danger',desc:'구근에 독성 물질이 농축되어 있으며, 꽃 자체도 독성이 있습니다.',sym:'심한 구토, 설사, 떨림, 호흡 곤란',m:[3,4],aspca:'Toxic to Cats (severe)'},
+  {id:'23',k:'아이리스',e:'Iris',s:'Iris spp.',lvl:'danger',desc:'이리신(Irisin) 등 독성 물질을 포함합니다. 구근이 가장 위험하나 꽃과 잎도 독성이 있습니다.',sym:'구토, 설사, 침 흘림, 무기력, 복통',m:[4,5,6],aspca:'Toxic to Cats (moderate-severe)'},
+  {id:'24',k:'수국',e:'Hydrangea',s:'Hydrangea macrophylla',lvl:'danger',desc:'시아노겐 배당체를 포함하여 체내에서 청산가리 유사 독소를 생성할 수 있습니다.',sym:'구토, 설사, 무기력, 청색증, 경련',m:[6,7,8],aspca:'Toxic to Cats (severe)'},
+  {id:'25',k:'시클라멘',e:'Cyclamen',s:'Cyclamen spp.',lvl:'danger',desc:'사포닌(Saponin)을 포함합니다. 구근이 특히 위험하며, 심장 부정맥과 발작을 유발할 수 있습니다.',sym:'구토, 설사, 심장 부정맥, 발작',m:[10,11,12],aspca:'Toxic to Cats (severe)'},
+  {id:'26',k:'협죽도',e:'Oleander',s:'Nerium oleander',lvl:'danger',desc:'⚠ 극도로 위험! 모든 부위에 심장 배당체가 포함되어 소량만 섭취해도 치명적입니다.',sym:'구토, 설사, 심장 부정맥, 사망',m:[5,6,7,8,9],aspca:'Toxic — DEADLY'},
+];
+
+const BADGE = {
+  safe:    { text:'✓ 안전', cls:'safe' },
+  caution: { text:'! 주의', cls:'caution' },
+  danger:  { text:'✕ 위험', cls:'danger' },
+};
+
+const MONTH_NAMES = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+// ── 카드 생성 ─────────────────────────────────────────────────────────────
+function makeCard(f) {
+  const b = BADGE[f.lvl];
+  const symHtml = f.sym ? `
+    <div class="symptom-box ${f.lvl === 'caution' ? 'caution' : ''}">
+      <div class="symptom-title">증상</div>
+      <div class="symptom-text">${f.sym}</div>
+    </div>` : '';
+
+  const div = document.createElement('div');
+  div.className = `card ${f.lvl}`;
+  div.innerHTML = `
+    <div class="card-header">
+      <div class="card-names">
+        <div class="korean">${f.k}</div>
+        <div class="english">${f.e}</div>
+      </div>
+      <span class="badge ${b.cls}">${b.text}</span>
+    </div>
+    <div class="scientific">${f.s}</div>
+    <div class="card-detail">
+      <hr>
+      <p class="desc">${f.desc}</p>
+      ${symHtml}
+      <p class="aspca-ref">출처: ASPCA — ${f.aspca}</p>
+    </div>
+    <div class="card-hint">▼ 자세히</div>
+  `;
+  div.addEventListener('click', () => {
+    div.classList.toggle('open');
+    div.querySelector('.card-hint').textContent =
+      div.classList.contains('open') ? '▲ 접기' : '▼ 자세히';
+  });
+  return div;
+}
+
+// ── 검색 탭 ───────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+const filterDefs = [
+  { key:'all',     label:'전체',   color:'#2C3E50', bg:'#ECF0F1' },
+  { key:'safe',    label:'✓ 안전', color:'#1A7A45', bg:'#E6F4ED' },
+  { key:'caution', label:'! 주의', color:'#A66000', bg:'#FFF3CD' },
+  { key:'danger',  label:'✕ 위험', color:'#B71C1C', bg:'#FDECEA' },
+];
+
+const filterRow = document.getElementById('filter-row');
+filterDefs.forEach(fd => {
+  const btn = document.createElement('button');
+  btn.className = 'chip' + (fd.key === 'all' ? ' active' : '');
+  btn.textContent = fd.label;
+  btn.style.color = fd.color;
+  btn.style.background = fd.bg;
+  btn.dataset.key = fd.key;
+  btn.addEventListener('click', () => {
+    currentFilter = fd.key;
+    filterRow.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    renderSearch();
+  });
+  filterRow.appendChild(btn);
+});
+
+const searchInput = document.getElementById('search-input');
+const clearBtn    = document.getElementById('clear-btn');
+const flowerList  = document.getElementById('flower-list');
+const resultCount = document.getElementById('result-count');
+
+function renderSearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  let data = currentFilter === 'all' ? FLOWERS : FLOWERS.filter(f => f.lvl === currentFilter);
+  if (q) data = data.filter(f => f.k.includes(q) || f.e.toLowerCase().includes(q));
+
+  resultCount.textContent = `${data.length}가지 꽃${q ? ` — "${searchInput.value.trim()}" 검색 결과` : ''}`;
+  flowerList.innerHTML = '';
+
+  if (data.length === 0) {
+    flowerList.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🌸</div>
+        <p>검색 결과가 없습니다</p>
+        <small>다른 이름으로 검색해보세요</small>
+      </div>`;
+    return;
+  }
+  data.forEach(f => flowerList.appendChild(makeCard(f)));
+}
+
+searchInput.addEventListener('input', () => {
+  clearBtn.style.display = searchInput.value ? 'block' : 'none';
+  renderSearch();
+});
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearBtn.style.display = 'none';
+  renderSearch();
+});
+
+// ── 이달의 꽃 탭 ──────────────────────────────────────────────────────────
+function renderMonthly() {
+  const month = new Date().getMonth() + 1;
+  const list  = FLOWERS.filter(f => f.m.includes(month) && f.lvl === 'safe');
+
+  document.getElementById('month-name').textContent  = MONTH_NAMES[month - 1];
+  document.getElementById('month-count').textContent = `안전한 꽃 ${list.length}가지`;
+
+  const container = document.getElementById('monthly-list');
+  container.innerHTML = '';
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🍂</div>
+        <p>이번 달 추천 꽃이 없습니다</p>
+        <small>꽃 검색 탭에서 직접 확인해보세요</small>
+      </div>`;
+    return;
+  }
+  list.forEach(f => container.appendChild(makeCard(f)));
+}
+
+// ── 탭 전환 ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+
+// ── 초기 렌더링 ───────────────────────────────────────────────────────────
+renderSearch();
+renderMonthly();
+</script>
+</body>
+</html>
