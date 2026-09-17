@@ -56,6 +56,42 @@
   }
   #searchBtn:active { opacity: 0.85; }
 
+  .search-title { font-size: 20px; font-weight: 800; margin: 4px 0 14px; }
+  .search-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .option-card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 16px;
+    padding: 18px 16px; text-align: center;
+  }
+  .option-icon { font-size: 32px; margin-bottom: 8px; }
+  .option-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .option-desc { font-size: 12px; color: var(--sub); line-height: 1.4; }
+  #lensBtn {
+    margin-top: 12px; width: 100%; background: var(--ink); color: #fff; border: none;
+    border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  #lensBtn:active { opacity: 0.85; }
+  .name-input-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .name-input-row input {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 14px; font-size: 15px; color: var(--ink);
+    font-family: inherit; outline: none; text-align: center;
+  }
+  .name-input-row input:focus { border-color: var(--accent); }
+  .name-input-row button {
+    background: var(--ink); color: #fff; border: none; border-radius: 12px;
+    padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .name-input-row button:active { opacity: 0.85; }
+  .lens-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 14px; font-size: 14px; color: var(--ink); text-decoration: none; font-weight: 600;
+  }
+  .lens-link:active { background: var(--paper); }
+  @media (max-width: 480px) {
+    .search-options { grid-template-columns: 1fr; }
+  }
+
   .suggest { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-top: 8px; overflow: hidden; }
   .suggest-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; border-bottom: 1px solid var(--line); }
   .suggest-item:last-child { border-bottom: none; }
@@ -106,7 +142,13 @@
   .grid-name { font-size: 15px; font-weight: 600; }
 
   .disclaimer { font-size: 12px; color: var(--sub); line-height: 1.6; margin-top: 40px; }
-  .source { font-size: 11px; color: var(--sub); margin-top: 8px; }
+  .sources {
+    margin-top: 16px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .sources-title { font-size: 12px; font-weight: 700; color: var(--sub); letter-spacing: 0.5px; margin-bottom: 8px; }
+  .sources-item { font-size: 13px; color: var(--ink); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .sources-item a { color: var(--ink); text-decoration: underline; }
 
   @media (max-width: 480px) {
     h1 { font-size: 36px; }
@@ -117,13 +159,13 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">고양이와 함께 사는 집을 위한</div>
+  <div class="eyebrow">고양이에게 안전한 꽃 알아볼까냥</div>
   <h1>묘한 꽃집</h1>
-  <p class="lede">집에 들일 꽃, 우리 고양이에게 안전한지 먼저 확인하세요. 꽃 이름을 검색하면 안전 여부와 함께 사진으로 보여드려요.</p>
-  <p class="lede-paw">🐾 집사야, 꽃 들이기 전에 나한테 한 번만 물어봐 줘.</p>
+  <p class="lede">집사야, 이 꽃 나한테 데려오기 전에 나한테 먼저 물어봐줄래냥? 안전한지 내가 알려줄게냥.</p>
+  <p class="lede-paw">🐾 이름을 알면 검색해줘냥, 모르면 사진 찍어서 물어봐도 된다냥.</p>
 
   <div class="how">
-    <div class="how-title">위험도는 세 가지로 알려드려요</div>
+    <div class="how-title">위험도는 이렇게 세 가지로 알려준다냥</div>
     <div class="how-legend">
       <div class="legend-item"><span class="legend-dot" style="background:var(--safe)"></span>안전 · 곁에 둬도 괜찮아요</div>
       <div class="legend-item"><span class="legend-dot" style="background:var(--caution)"></span>주의 · 가까이 두지 않기를 권해요</div>
@@ -131,22 +173,40 @@
     </div>
   </div>
 
-  <div class="search-row">
-    <input id="q" type="text" placeholder="예: 백합, 장미, 튤립" autocomplete="off">
-    <button id="searchBtn">확인</button>
+  <div class="search-title">안전한 꽃인지 찾아보기</div>
+  <div class="search-options">
+    <div class="option-card">
+      <div class="option-icon">📝</div>
+      <div class="option-title">이름으로 찾기</div>
+      <div class="option-desc">꽃 이름을 알고 있다면 여기에 적어달라냥</div>
+      <div class="name-input-row">
+        <input id="q" type="text" placeholder="예: 백합, 장미, 튤립" autocomplete="off">
+        <button id="searchBtn">확인해줘냥</button>
+      </div>
+    </div>
+    <div class="option-card">
+      <div class="option-icon">📷</div>
+      <div class="option-title">사진으로 찾기</div>
+      <div class="option-desc">이름을 모르면 사진부터 찍어보라냥</div>
+      <button id="lensBtn" onclick="window.open('https://lens.google.com/', '_blank')">구글 렌즈로 찾기</button>
+    </div>
   </div>
   <div id="suggest"></div>
   <div id="result"></div>
 
   <div class="divider"></div>
   <div class="section-eyebrow" id="monthEyebrow"></div>
-  <div class="section-title">지금 사도 안심인 꽃</div>
-  <div class="section-sub">이맘때 제철인 꽃 중에서, 내가 곁에 있어도 괜찮은 아이들이야. 🐾</div>
+  <div class="section-title">지금 사도 안심인 꽃이다냥</div>
+  <div class="section-sub">이맘때 제철인 꽃 중에서, 내가 곁에 있어도 괜찮은 아이들이라냥. 🐾</div>
   <div class="grid" id="safeGrid"></div>
   <div id="dangerSection"></div>
 
   <p class="disclaimer" id="disclaimer"></p>
-  <p class="source" id="source"></p>
+  <div class="sources">
+    <div class="sources-title">출처</div>
+    <div class="sources-item" id="sourceInfo"></div>
+    <div class="sources-item">📷 사진: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a></div>
+  </div>
 </div>
 
 <script>
@@ -156,9 +216,9 @@ const RISK_BG = { safe: 'var(--safe-bg)', caution: 'var(--caution-bg)', danger: 
 const RISK_COLOR = { safe: 'var(--safe)', caution: 'var(--caution)', danger: 'var(--danger)' };
 const RISK_EMOJI = { safe: '\uD83C\uDF3F', caution: '\u26A0\uFE0F', danger: '\uD83D\uDEAB' };
 const CAT_SAYS = {
-  safe: '이 꽃은 내 옆에 있어도 괜찮아. 안심하고 들여도 돼, 집사야.',
-  caution: '이 꽃은 조금 조심해 줘. 내 손 닿는 곳엔 안 두는 게 좋겠어.',
-  danger: '이 꽃은 나한테 위험해. 집에는 들이지 말아 줘… 부탁이야.'
+  safe: '이 꽃은 내 옆에 있어도 괜찮다냥. 안심하고 들여도 돼냥, 집사야.',
+  caution: '이 꽃은 조금 조심해달라냥. 내 손 닿는 곳엔 안 두는 게 좋겠다냥.',
+  danger: '이 꽃은 나한테 위험하다냥. 집에는 들이지 말아줘냥… 부탁이야.'
 };
 const MONTH = new Date().getMonth() + 1;
 
@@ -200,8 +260,9 @@ function renderResult(flower){
   suggestBox.innerHTML = '';
   if(flower === null){
     resultBox.innerHTML =
-      '<div class="not-found"><div class="not-found-title">아직 모르는 꽃이야</div>' +
-      '<div class="not-found-desc">"' + esc(qInput.value) + '"는 내 꽃 목록에 아직 없어. 정식 이름이나 다른 이름으로 다시 불러봐 줄래?</div></div>';
+      '<div class="not-found"><div class="not-found-title">아직 모르는 꽃이다냥</div>' +
+      '<div class="not-found-desc">"' + esc(qInput.value) + '"는 내 꽃 목록에 아직 없다냥. 정식 이름이나 다른 이름으로 다시 불러봐줄래냥?</div>' +
+      '<a class="lens-link" href="https://lens.google.com/" target="_blank" rel="noopener">📷 구글 렌즈로 사진 찍어서 이름 찾아보기</a></div>';
     return;
   }
   const ri = getRiskInfo(flower.risk);
@@ -220,7 +281,7 @@ function renderResult(flower){
     '<div class="cat-says"><span class="paw">\uD83D\uDC3E</span><span>' + esc(CAT_SAYS[flower.risk]) + '</span></div>';
   if(flower.symptoms) html += '<div class="info-block"><div class="info-label">증상</div><div class="info-text">' + esc(flower.symptoms) + '</div></div>';
   if(flower.note) html += '<div class="info-block"><div class="info-label">참고</div><div class="info-text">' + esc(flower.note) + '</div></div>';
-  if(flower.risk === 'danger') html += '<div class="emergency">혹시 내가 이 꽃을 먹은 것 같으면, 망설이지 말고 바로 동물병원에 전화해 줘.</div>';
+  if(flower.risk === 'danger') html += '<div class="emergency">혹시 내가 이 꽃을 먹은 것 같으면, 망설이지 말고 바로 동물병원에 전화해달라냥.</div>';
   html += '</div></div>';
   resultBox.innerHTML = html;
 }
@@ -260,21 +321,21 @@ const md = flowersByMonth(MONTH);
 document.getElementById('monthEyebrow').textContent = MONTH + '월의 꽃';
 const safeGrid = document.getElementById('safeGrid');
 if(md.safe.length === 0){
-  safeGrid.innerHTML = '<span style="color:var(--sub);font-size:14px">이번 달은 추천할 안전한 꽃이 아직 없어, 집사야.</span>';
+  safeGrid.innerHTML = '<span style="color:var(--sub);font-size:14px">이번 달은 추천할 안전한 꽃이 아직 없다냥, 집사야.</span>';
 } else {
   safeGrid.innerHTML = md.safe.map(f => gridCard(f, false)).join('');
 }
 if(md.danger.length > 0){
   document.getElementById('dangerSection').innerHTML =
-    '<div class="section-title warn">이맘때 특히 조심해 줘</div>' +
-    '<div class="section-sub">예쁘지만 나한테는 위험한 아이들이야. 꽃다발에 섞여 오기 쉬우니 잘 봐 줘. 🐾</div>' +
+    '<div class="section-title warn">이맘때는 특히 조심해달라냥</div>' +
+    '<div class="section-sub">예쁘지만 나한테는 위험한 아이들이라냥. 꽃다발에 섞여 오기 쉬우니 잘 봐달라냥. 🐾</div>' +
     '<div class="grid">' + md.danger.map(f => gridCard(f, true)).join('') + '</div>';
 }
 document.querySelectorAll('.grid-card').forEach(el =>
   el.addEventListener('click', () => { doSearch(el.dataset.name); window.scrollTo({top:0, behavior:'smooth'}); }));
 
 document.getElementById('disclaimer').textContent = DATA.metadata.disclaimer;
-document.getElementById('source').textContent = '정보 출처: ' + DATA.metadata.source + ' · 사진 출처: Wikimedia Commons';
+document.getElementById('sourceInfo').innerHTML = '📋 정보: <a href="' + DATA.metadata.sourceUrl + '" target="_blank" rel="noopener">' + esc(DATA.metadata.source) + '</a>';
 </script>
 </body>
 </html>
